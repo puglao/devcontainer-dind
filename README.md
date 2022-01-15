@@ -6,7 +6,7 @@ vscode docker-in-docker devcontainer template for my apple silicon Mac
 ## Usage
 ```
 cd <project directory>
-git clone .devcontainer
+git clone https://github.com/puglao/devcontainer-dind.git .devcontainer
 ```
 
 ## TODO
