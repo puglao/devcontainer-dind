@@ -1,6 +1,8 @@
 # Global build arg
 ARG INSTALL_ZSH=false
 ARG INSTALL_GO=false
+ARG GIT_USERNAME
+ARG GIT_EMAIL
 
 # Note: You can use any Debian/Ubuntu based image you want. 
 # FROM mcr.microsoft.com/vscode/devcontainers/base:0-bullseye
@@ -107,6 +109,11 @@ ENV DOCKER_HOST=unix:///run/user/1000/docker.sock
 
 # Set default shell to zsh
 ENV SHELL=zsh
+
+# Set git userinfo for showing in commit log
+RUN git config --global user.name $GIT_USERNAME; \
+	git config --global user.email $GIT_EMAIL
+
 
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 

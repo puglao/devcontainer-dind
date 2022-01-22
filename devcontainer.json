@@ -26,7 +26,9 @@
 	"build": {
 		"args": {
 			"INSTALL_ZSH": "false",
-			"INSTALL_GO": "true"
+			"INSTALL_GO": "true",
+			// "GIT_USERNAME": "foo",
+			// "GIT_EMAIL": "bar@example.com",
 		}
 	}
 }
