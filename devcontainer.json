@@ -6,6 +6,11 @@
 	// "runArgs": ["--init", "--privileged"],
 	"runArgs": ["--init", "--privileged"],
 	// "mounts": ["source=dind-var-lib-docker,target=/var/lib/docker,type=volume"],
+	"mounts": [
+		// "source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind",
+		// "source=${localEnv:HOME}/.aws,target=/home/vscode/.aws,type=bind",
+		// "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind",
+	],
 	"overrideCommand": false,
 	
 	// Set *default* container specific settings.json values on container create.
@@ -27,6 +32,7 @@
 		"args": {
 			"INSTALL_ZSH": "false",
 			"INSTALL_GO": "true",
+			// option gitconfig in build
 			// "GIT_USERNAME": "foo",
 			// "GIT_EMAIL": "bar@example.com",
 		}

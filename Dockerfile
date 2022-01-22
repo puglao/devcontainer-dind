@@ -111,10 +111,13 @@ ENV DOCKER_HOST=unix:///run/user/1000/docker.sock
 ENV SHELL=zsh
 
 # Set git userinfo for showing in commit log
-RUN git config --global user.name $GIT_USERNAME; \
-	git config --global user.email $GIT_EMAIL
-
-
+ARG GIT_USERNAME
+ARG GIT_EMAIL
+RUN if [ ! -z $GIT_USERNAME ] && [ ! -z $GIT_EMAIL ] ; then \
+	git config --global user.name $GIT_USERNAME; \
+	git config --global user.email $GIT_EMAIL; \
+	fi
+	
 ENTRYPOINT ["/usr/local/bin/dockerd-entrypoint.sh"]
 
 
