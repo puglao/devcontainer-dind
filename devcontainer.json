@@ -32,6 +32,9 @@
 		"args": {
 			"INSTALL_ZSH": "false",
 			"INSTALL_GO": "true",
+			"INSTALL_SHELLCHECK": "true",
+			"INSTALL_TERRAFORM": "true",
+			"INSTALL_TERRAGRUNT": "true",
 			// option gitconfig in build
 			// "GIT_USERNAME": "foo",
 			// "GIT_EMAIL": "bar@example.com",

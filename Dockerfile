@@ -1,8 +1,15 @@
 # Global build arg
 ARG INSTALL_ZSH=false
 ARG INSTALL_GO=false
+ARG INSTALL_SHELLCHECK=false
+ARG INSTALL_TERRAFORM=false
+ARG INSTALL_TERRAGRUNT=false
 ARG GIT_USERNAME
 ARG GIT_EMAIL
+ARG VERSION_TERRAFORM=''
+ARG VERSION_TERRAGRUNT=''
+
+
 
 # Note: You can use any Debian/Ubuntu based image you want. 
 # FROM mcr.microsoft.com/vscode/devcontainers/base:0-bullseye
@@ -88,14 +95,96 @@ FROM zsh_setup as install_package
 
 # build arg
 ARG INSTALL_GO
+ARG INSTALL_SHELLCHECK
 
 USER root
 
+WORKDIR /root
+COPY library-scripts/. .
+
 # Install go
 ENV PATH="${PATH}:/usr/local/go/bin"
-WORKDIR /root
-COPY library-scripts/install_go.sh install_go.sh
-RUN	if [ ${INSTALL_GO} == true ]; then ./install_go.sh; fi; 
+RUN	if [[ "${INSTALL_GO}" ]]; then ./install_go.sh; fi; 
+
+# Install shellcheck
+COPY --from=koalaman/shellcheck-alpine:v0.8.0 /bin/shellcheck /usr/local/bin/shellcheck
+RUN chmod +x /usr/local/bin/shellcheck; \
+	if [[ ! "${INSTALL_SHELLCHECK}" ]]; then rm /usr/local/bin/shellcheck; fi
+
+
+# Install terraform
+ARG INSTALL_TERRAFORM
+ARG VERSION_TERRAFORM
+SHELL [ "bash", "-c" ]
+RUN set -eux; \
+	source ./common.sh; \
+	common::prerequisite_check; \
+	OS="$(uname)"; \
+	ARCH="$(apk --print-arch)"; \
+	case "${OS}" in \
+		"Linux") OS="linux"; ;; \
+		"Darwin") OS="darwin"; ;; \
+		*) common::error "unsupported OS ${OS}"; ;; \
+	esac; \
+		case "${ARCH}" in \
+		"x86_64") ARCH="amd64"; ;; \
+		"aarch64") ARCH="arm64"; ;; \
+		*) common::error "unsupported ARCH ${ARCH}"; ;; \
+	esac; \
+	if [[ "${INSTALL_TERRAFORM}" ]]; then \
+		repo_name="hashicorp/terraform"; \
+		tag_pattern="v[0-9]+\.[0-9]+\.[0-9]+"; \
+		target_version=""; \
+		if [[ -z "${VERSION_TERRAFORM}" ]]; then \
+			target_version="$(common::github::latest_tag ${repo_name} ${tag_pattern})"; \
+		else \
+			if [[ $(common::github:version_check "${repo_name}" "${VERSION_TERRAFORM}") ]]; then \
+				target_version="${VERSION_TERRAFORM}"; \
+			fi; \
+		fi; \
+		package_pattern="terraform_"${target_version#v}"_"${OS}"_"${ARCH}".zip"; \
+		download_url="https://releases.hashicorp.com/terraform/"${target_version#v}"/"${package_pattern}""; \
+		curl -sL "${download_url}" | unzip -d /usr/local/bin/ -; \
+		chmod +x /usr/local/bin/terraform; \
+	fi;
+
+
+# Install terragrunt
+ARG INSTALL_TERRAGRUNT
+ARG VERSION_TERRAGRUNT
+SHELL [ "bash", "-c" ]
+RUN set -eux; \
+	source ./common.sh; \
+	common::prerequisite_check; \
+	OS="$(uname)"; \
+	ARCH="$(apk --print-arch)"; \
+	case "${OS}" in \
+		"Linux") OS="linux"; ;; \
+		"Darwin") OS="darwin"; ;; \
+		*) common::error "unsupported OS ${OS}"; ;; \
+	esac; \
+		case "${ARCH}" in \
+		"x86_64") ARCH="amd64"; ;; \
+		"aarch64") ARCH="arm64"; ;; \
+		*) common::error "unsupported ARCH ${ARCH}"; ;; \
+	esac; \
+	if [[ "${INSTALL_TERRAGRUNT}" ]]; then \
+		repo_name="gruntwork-io/terragrunt"; \
+		tag_pattern="v[0-9]+\.[0-9]+\.[0-9]+"; \
+		target_version=""; \
+		if [[ -z "${VERSION_TERRAGRUNT}" ]]; then \
+			target_version="$(common::github::latest_tag ${repo_name} ${tag_pattern})"; \
+		else \
+			if [[ $(common::github:version_check "${repo_name}" "${VERSION_TERRAGRUNT}") ]]; then \
+				target_version="${VERSION_TERRAGRUNT}"; \
+			fi; \
+		fi; \
+		package_pattern="terragrunt_"${OS}"_"${ARCH}""; \
+		download_url="$(common::github::download_url "${repo_name}" "${target_version}" "${package_pattern}")"; \
+		curl -sL "${download_url}" -o /usr/local/bin/terragrunt; \
+		chmod +x /usr/local/bin/terragrunt; \
+	fi;
+
 
 
 
